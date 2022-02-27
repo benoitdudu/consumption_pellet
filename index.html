@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<script>
+	class Date {
+		constructor(inDateStr) {
+			let theSplittedDate = inDateStr.split('-');
+			this.year  = parseInt(theSplittedDate[0]);
+			this.month = parseInt(theSplittedDate[1]);
+			this.day   = parseInt(theSplittedDate[2]);
+		}
+	}
+	class MonthDay {
+		constructor(dateStr) {
+			this.month = parseInt(dateStr.split('-')[1])
+			this.day = parseInt(dateStr.split('-')[2])
+		}
+		cmp(other) {
+			if (this.month == other.month) {
+				if (this.day == other.day) {
+					return 0;
+				}
+				else if (this.day < other.day) {
+					return -1;
+				}
+				return +1;
+			}
+			if ((this.month > 6) && (other.month < 6)) {
+				return -1;
+			}
+			if ((this.month < 6) && (other.month > 6)) {
+				return +1;
+			}
+			return this.month < other.month ? -1 : +1;
+		}
+
+	}
+	class Winter {
+		constructor(inStartYear) {
+			let nextYear = inStartYear + 1;
+			this.dateList = [];
+			this.startYear = inStartYear;
+			this.name = inStartYear.toString() + '-' + nextYear.toString();
+		}
+	}
+
+    function writeResultByWinter(sortedDates, winterList) {
+		function GetMonthStr(inMonth) {
+			m = {1: 'jan',  2: 'fev',  3: 'mar',  4: 'avr', 5: 'mai',
+				9: 'sep', 10: 'oct', 11: 'nov', 12: 'dec'};
+			return m[inMonth];
+		}
+        currentCountByWinter = [];
+        f = "";
+        f +="      ";
+        winterList.forEach(function (w) {
+            f += '|' + w.name;
+            currentCountByWinter.push(0)
+		});
+        f += "|\n"
+        sortedDates.forEach(function(d) {
+			f += d.day.toString().padStart(2, ' ') + ' ' + GetMonthStr(d.month) + '|';
+			for (let i=0; i < winterList.length; ++i) {
+				let winter = winterList[i];
+				if (winter.dateList.find(function(date) { return d.cmp(date) == 0;})) {
+					currentCountByWinter[i] += 1;
+					f += '    '+currentCountByWinter[i].toString().padStart(2, ' ')+'   |';
+				}
+				else {
+					f += '         |';
+				}
+			}			
+            f += '\n';
+		});
+        f += '******' + '**********'.repeat(winterList.length) + '*\n';
+        f += 'Total :'
+        for (let i=0; i < winterList.length; ++i) {
+            f += '    '+ winterList[i].dateList.length.toString().padStart(2, ' ') +'   |';
+        }
+		console.log(f);
+	}
+
+	function processData(inData) {
+		// code to be executed
+		let arr = inData.split("\n");
+		let fLen = arr.length;
+		let theWinter = null;
+		let winterList = [];
+		let dateArr = [];
+
+		for (let i = 0; i < fLen-1; i++) {
+			let dateStr = arr[i];
+			let theDate = new Date(dateStr);
+
+			if ((theWinter == null) || ((theWinter.startYear == theDate.year - 1) && theDate.month > 6)) {
+			console.log(theWinter);
+				theWinter = new Winter(theDate.year);
+				winterList.push(theWinter);
+			}
+			theMonthDay = new MonthDay(dateStr);
+			theWinter.dateList.push(theMonthDay);
+			dateArr.push(theMonthDay);
+		}
+		dateArr.sort(function (a, b) { return a.cmp(b);});
+		let sortedDates = [];
+		dateArr.forEach(function (value) {
+			let push = 1;
+			if (sortedDates.length != 0) {
+				if (sortedDates[sortedDates.length-1].cmp(value) == 0) {
+					//console.log("same val");
+					//console.log(value);
+					push = 0;
+				}
+			}
+			if (push) {
+				sortedDates.push(value);
+			}
+		});
+		console.log("sortedDates");
+		console.log(sortedDates);
+		writeResultByWinter(sortedDates, winterList);
+		
+	}
+	console.log("titi")
+	window.addEventListener('load', function () {
+	var myUrl = 'https://raw.githubusercontent.com/benoitdudu/pellet_stove_control/main/pellet_stove_app/pellet_consumption.txt'
+
+
+	fetch(myUrl)
+	  .then(response => response.text())
+	  .then(data => processData(data));
+
+	});
+	console.log("titi2")
+</script>
+
+<body>
+</body>
+</html> 
