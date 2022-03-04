@@ -41,44 +41,165 @@
 			this.dateList = [];
 			this.startYear = inStartYear;
 			this.name = inStartYear.toString() + '-' + nextYear.toString();
+            this.countNbPellet = 0;
 		}
 	}
 
-    function writeResultByWinter(sortedDates, winterList) {
-		function GetMonthStr(inMonth) {
-			m = {1: 'jan',  2: 'fev',  3: 'mar',  4: 'avr', 5: 'mai',
-				9: 'sep', 10: 'oct', 11: 'nov', 12: 'dec'};
-			return m[inMonth];
-		}
-        currentCountByWinter = [];
-        f = "";
-        f +="      ";
+    function genHeaderHtml(winterList) {
+        let str  = '<tr>\n';
+        str += '<th></th>\n';
         winterList.forEach(function (w) {
-            f += '|' + w.name;
-            currentCountByWinter.push(0)
+            str += '<th>' + w.name + '</th>\n';
 		});
-        f += "|\n"
-        sortedDates.forEach(function(d) {
-			f += d.day.toString().padStart(2, ' ') + ' ' + GetMonthStr(d.month) + '|';
-			for (let i=0; i < winterList.length; ++i) {
-				let winter = winterList[i];
-				if (winter.dateList.find(function(date) { return d.cmp(date) == 0;})) {
-					currentCountByWinter[i] += 1;
-					f += '    '+currentCountByWinter[i].toString().padStart(2, ' ')+'   |';
-				}
-				else {
-					f += '         |';
-				}
-			}			
-            f += '\n';
+        str += '</tr>\n';
+        return str;
+    }
+    function genHeaderTxt(winterList) {
+        let str = '';
+        str +='      ';
+        winterList.forEach(function (w) {
+            str += '|' + w.name;
 		});
-        f += '******' + '**********'.repeat(winterList.length) + '*\n';
-        f += 'Total :'
-        for (let i=0; i < winterList.length; ++i) {
-            f += '    '+ winterList[i].dateList.length.toString().padStart(2, ' ') +'   |';
+        str += '|\n'
+        return str;
+    }
+    function genHeader(type, winterList) {
+        if (type == 0) {
+            return genHeaderTxt(winterList);
         }
-		console.log(f);
-	}
+        else {
+            return genHeaderHtml(winterList);
+        }
+    }
+
+    function genFooterTxt(winterList) {
+        let str  = '******' + '**********'.repeat(winterList.length) + '*\n';
+        str += 'Total :'
+        for (let i=0; i < winterList.length; ++i) {
+            str += '    '+ winterList[i].dateList.length.toString().padStart(2, ' ') +'   |';
+        }
+        return str;
+    }
+    function genFooterHtml(winterList) {
+        let str  = '<tr>';
+        str += '<td>Total :</td>'
+        for (let i=0; i < winterList.length; ++i) {
+            str += '<td>'+ winterList[i].dateList.length.toString() +'</td>';
+        }
+        str += '</tr>\n';
+        return str;
+    }
+    function genFooter(type, winterList) {
+        if (type == 0) {
+            return genFooterTxt(winterList);
+        }
+        else {
+            return genFooterHtml(winterList);
+        }
+    }
+
+    function GetMonthStr(inMonth) {
+        let m = {1: 'jan',  2: 'fev',  3: 'mar',  4: 'avr', 5: 'mai',
+            9: 'sep', 10: 'oct', 11: 'nov', 12: 'dec'};
+        return m[inMonth];
+    }
+    function genDateColumnTxt(date) {
+        return date.day.toString().padStart(2, ' ') + ' ' + GetMonthStr(date.month) + '|';
+    }
+    function genDateColumnHtml(date) {
+        let str  = '<td>';
+        str += date.day.toString() + ' ' + GetMonthStr(date.month);
+        str += '</td>';
+        return str;
+    }
+    function genDateColumn(type, date) {
+        if (type == 0) {
+            return genDateColumnTxt(date);
+        }
+        else {
+            return genDateColumnHtml(date);
+        }
+    }
+
+    function genWinterColumnsTxt(d, winterList) {
+        let str = '';
+        for (let i=0; i < winterList.length; ++i) {
+            let winter = winterList[i];
+            if (winter.dateList.find(function(date) { return d.cmp(date) == 0;})) {
+                winter.countNbPellet += 1;
+                str += '    ' + winter.countNbPellet.toString().padStart(2, ' ') + '   |';
+            }
+            else {
+                str += '         |';
+            }
+        }
+        return str;
+    }
+    function genWinterColumnsHtml(d, winterList) {
+        let str = '';
+        for (let i=0; i < winterList.length; ++i) {
+            let winter = winterList[i];
+            if (winter.dateList.find(function(date) { return d.cmp(date) == 0;})) {
+                winter.countNbPellet += 1;
+                str += '<td>' + winter.countNbPellet.toString() + '</td>';
+            }
+            else {
+                str += '<td></td>';
+            }
+        }
+        return str;
+    }
+    function genWinterColumns(type, date, winterList) {
+        if (type == 0) {
+            return genWinterColumnsTxt(date, winterList);
+        }
+        else {
+            return genWinterColumnsHtml(date, winterList);
+        }
+    }
+
+    function genRowTxt(d, winterList) {
+        let str = '';
+        str += genDateColumnTxt(d);
+        str += genWinterColumnsTxt(d, winterList);
+        str += '\n';
+        return str;
+    }
+    function genRowHtml(d, winterList) {
+        let str = '<tr>';
+        str += genDateColumnHtml(d);
+        str += genWinterColumnsHtml(d, winterList);
+        str += '</tr>\n';
+        return str;
+    }
+    function genRow(type, date, winterList) {
+        if (type == 0) {
+            return genRowTxt(date, winterList);
+        }
+        else {
+            return genRowHtml(date, winterList);
+        }
+    }
+
+    function genTable(type, sortedDates, winterList) {
+        let str = '';
+
+        if (type == 1) {
+            str += '<table>\n';
+        }
+
+        str += genHeader(type, winterList);
+
+        sortedDates.forEach(function(d) {
+            str += genRow(type, d, winterList);
+		});
+        str += genFooter(type, winterList);
+
+        if (type == 1) {
+            str += '</table>\n';
+        }
+        return str;
+    }
 
 	function processData(inData) {
 		// code to be executed
@@ -118,8 +239,9 @@
 		});
 		console.log("sortedDates");
 		console.log(sortedDates);
-		writeResultByWinter(sortedDates, winterList);
-		
+        let genType = 0;
+		let f = genTable(genType, sortedDates, winterList);
+		console.log(f);
 	}
 	console.log("titi")
 	window.addEventListener('load', function () {
