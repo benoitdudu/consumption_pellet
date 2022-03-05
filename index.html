@@ -2,55 +2,55 @@
 <html>
 
 <script>
-	class Date {
-		constructor(inDateStr) {
-			let theSplittedDate = inDateStr.split('-');
-			this.year  = parseInt(theSplittedDate[0]);
-			this.month = parseInt(theSplittedDate[1]);
-			this.day   = parseInt(theSplittedDate[2]);
-		}
-	}
-	class MonthDay {
-		constructor(dateStr) {
-			this.month = parseInt(dateStr.split('-')[1])
-			this.day = parseInt(dateStr.split('-')[2])
-		}
-		cmp(other) {
-			if (this.month == other.month) {
-				if (this.day == other.day) {
-					return 0;
-				}
-				else if (this.day < other.day) {
-					return -1;
-				}
-				return +1;
-			}
-			if ((this.month > 6) && (other.month < 6)) {
-				return -1;
-			}
-			if ((this.month < 6) && (other.month > 6)) {
-				return +1;
-			}
-			return this.month < other.month ? -1 : +1;
-		}
+    class Date {
+        constructor(inDateStr) {
+            let theSplittedDate = inDateStr.split('-');
+            this.year  = parseInt(theSplittedDate[0]);
+            this.month = parseInt(theSplittedDate[1]);
+            this.day   = parseInt(theSplittedDate[2]);
+        }
+    }
+    class MonthDay {
+        constructor(dateStr) {
+            this.month = parseInt(dateStr.split('-')[1])
+            this.day = parseInt(dateStr.split('-')[2])
+        }
+        cmp(other) {
+            if (this.month == other.month) {
+                if (this.day == other.day) {
+                    return 0;
+                }
+                else if (this.day < other.day) {
+                    return -1;
+                }
+                return +1;
+            }
+            if ((this.month > 6) && (other.month < 6)) {
+                return -1;
+            }
+            if ((this.month < 6) && (other.month > 6)) {
+                return +1;
+            }
+            return this.month < other.month ? -1 : +1;
+        }
 
-	}
-	class Winter {
-		constructor(inStartYear) {
-			let nextYear = inStartYear + 1;
-			this.dateList = [];
-			this.startYear = inStartYear;
-			this.name = inStartYear.toString() + '-' + nextYear.toString();
+    }
+    class Winter {
+        constructor(inStartYear) {
+            let nextYear = inStartYear + 1;
+            this.dateList = [];
+            this.startYear = inStartYear;
+            this.name = inStartYear.toString() + '-' + nextYear.toString();
             this.countNbPellet = 0;
-		}
-	}
+        }
+    }
 
     function genHeaderHtml(winterList) {
         let str  = '<tr>\n';
         str += '<th></th>\n';
         winterList.forEach(function (w) {
             str += '<th>' + w.name + '</th>\n';
-		});
+        });
         str += '</tr>\n';
         return str;
     }
@@ -59,7 +59,7 @@
         str +='      ';
         winterList.forEach(function (w) {
             str += '|' + w.name;
-		});
+        });
         str += '|\n'
         return str;
     }
@@ -192,7 +192,7 @@
 
         sortedDates.forEach(function(d) {
             str += genRow(type, d, winterList);
-		});
+        });
         str += genFooter(type, winterList);
 
         if (type == 1) {
@@ -201,59 +201,59 @@
         return str;
     }
 
-	function processData(inData) {
-		// code to be executed
-		let arr = inData.split("\n");
-		let fLen = arr.length;
-		let theWinter = null;
-		let winterList = [];
-		let dateArr = [];
+    function processData(inData) {
+        // code to be executed
+        let arr = inData.split("\n");
+        let fLen = arr.length;
+        let theWinter = null;
+        let winterList = [];
+        let dateArr = [];
 
-		for (let i = 0; i < fLen-1; i++) {
-			let dateStr = arr[i];
-			let theDate = new Date(dateStr);
+        for (let i = 0; i < fLen-1; i++) {
+            let dateStr = arr[i];
+            let theDate = new Date(dateStr);
 
-			if ((theWinter == null) || ((theWinter.startYear == theDate.year - 1) && theDate.month > 6)) {
-			console.log(theWinter);
-				theWinter = new Winter(theDate.year);
-				winterList.push(theWinter);
-			}
-			theMonthDay = new MonthDay(dateStr);
-			theWinter.dateList.push(theMonthDay);
-			dateArr.push(theMonthDay);
-		}
-		dateArr.sort(function (a, b) { return a.cmp(b);});
-		let sortedDates = [];
-		dateArr.forEach(function (value) {
-			let push = 1;
-			if (sortedDates.length != 0) {
-				if (sortedDates[sortedDates.length-1].cmp(value) == 0) {
-					//console.log("same val");
-					//console.log(value);
-					push = 0;
-				}
-			}
-			if (push) {
-				sortedDates.push(value);
-			}
-		});
-		console.log("sortedDates");
-		console.log(sortedDates);
+            if ((theWinter == null) || ((theWinter.startYear == theDate.year - 1) && theDate.month > 6)) {
+            console.log(theWinter);
+                theWinter = new Winter(theDate.year);
+                winterList.push(theWinter);
+            }
+            theMonthDay = new MonthDay(dateStr);
+            theWinter.dateList.push(theMonthDay);
+            dateArr.push(theMonthDay);
+        }
+        dateArr.sort(function (a, b) { return a.cmp(b);});
+        let sortedDates = [];
+        dateArr.forEach(function (value) {
+            let push = 1;
+            if (sortedDates.length != 0) {
+                if (sortedDates[sortedDates.length-1].cmp(value) == 0) {
+                    //console.log("same val");
+                    //console.log(value);
+                    push = 0;
+                }
+            }
+            if (push) {
+                sortedDates.push(value);
+            }
+        });
+        console.log("sortedDates");
+        console.log(sortedDates);
         let genType = 0;
-		let f = genTable(genType, sortedDates, winterList);
-		console.log(f);
-	}
-	console.log("titi")
-	window.addEventListener('load', function () {
-	var myUrl = 'https://raw.githubusercontent.com/benoitdudu/pellet_stove_control/main/pellet_stove_app/pellet_consumption.txt'
+        let f = genTable(genType, sortedDates, winterList);
+        console.log(f);
+    }
+    console.log("titi")
+    window.addEventListener('load', function () {
+    var myUrl = 'https://raw.githubusercontent.com/benoitdudu/pellet_stove_control/main/pellet_stove_app/pellet_consumption.txt'
 
 
-	fetch(myUrl)
-	  .then(response => response.text())
-	  .then(data => processData(data));
+    fetch(myUrl)
+      .then(response => response.text())
+      .then(data => processData(data));
 
-	});
-	console.log("titi2")
+    });
+    console.log("titi2")
 </script>
 
 <body>
