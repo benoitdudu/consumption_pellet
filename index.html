@@ -57,6 +57,14 @@ td.date_col {
             this.startYear = inStartYear;
             this.name = inStartYear.toString() + '-' + nextYear.toString();
             this.countNbPellet = 0;
+            this.dictNbDateByMonth = new Map();
+        }
+        addDate(inMonthDay) {
+            this.dateList.push(inMonthDay);
+            if (!this.dictNbDateByMonth.has(inMonthDay.month)) {
+                this.dictNbDateByMonth.set(inMonthDay.month, 0);
+            }
+            this.dictNbDateByMonth.set(inMonthDay.month, this.dictNbDateByMonth.get(inMonthDay.month) + 1);
         }
     }
 
@@ -219,6 +227,29 @@ td.date_col {
         return str;
     }
 
+    function getDictNbDateByMonth(winterList) {
+        let dictNbDateByMonth = new Map();
+
+        for (let i=0; i < winterList.length; ++i) {
+            for (const [key, value] of winterList[i].dictNbDateByMonth) {
+                if (!dictNbDateByMonth.has(key)) {
+                    dictNbDateByMonth.set(key, 0);
+                }
+                dictNbDateByMonth.set(key, dictNbDateByMonth.get(key) + value);
+            }
+        }
+        let sortedDictNbDateByMonth = new Map(Array.from(dictNbDateByMonth).sort((a, b) => {
+            if ((a[0] > 6) && (b[0] < 6)) {
+                return -1;
+            }
+            if ((a[0] < 6) && (b[0] > 6)) {
+                return +1;
+            }
+            return a[0] < b[0] ? -1 : +1;
+        }));
+        return sortedDictNbDateByMonth;
+    }
+
     function processData(inData) {
         // code to be executed
         let arr = inData.split("\n");
@@ -232,12 +263,12 @@ td.date_col {
             let theDate = new Date(dateStr);
 
             if ((theWinter == null) || ((theWinter.startYear == theDate.year - 1) && theDate.month > 6)) {
-            console.log(theWinter);
+                console.log(theWinter);
                 theWinter = new Winter(theDate.year);
                 winterList.push(theWinter);
             }
             theMonthDay = new MonthDay(dateStr);
-            theWinter.dateList.push(theMonthDay);
+            theWinter.addDate(theMonthDay);
             dateArr.push(theMonthDay);
         }
         dateArr.sort(function (a, b) { return a.cmp(b);});
@@ -255,8 +286,12 @@ td.date_col {
                 sortedDates.push(value);
             }
         });
+
         console.log("sortedDates");
         console.log(sortedDates);
+        console.log("dictNbDateByMonth");
+        let dictNbDateByMonth = getDictNbDateByMonth(winterList);
+        console.log(dictNbDateByMonth);
 
         //let txt = genTable(0, sortedDates, winterList);
         //console.log(txt);
