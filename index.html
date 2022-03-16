@@ -15,6 +15,9 @@ td {
 td.date_col {
   text-align: right;
 }
+div {
+  display: none;
+}
 </style>
 <script>
     class Date {
@@ -135,14 +138,6 @@ td.date_col {
         str += '</td>';
         return str;
     }
-    function genDateColumn(type, date) {
-        if (type == 0) {
-            return genDateColumnTxt(date);
-        }
-        else {
-            return genDateColumnHtml(date);
-        }
-    }
 
     function genWinterColumnsTxt(d, winterList) {
         let str = '';
@@ -172,14 +167,6 @@ td.date_col {
         }
         return str;
     }
-    function genWinterColumns(type, date, winterList) {
-        if (type == 0) {
-            return genWinterColumnsTxt(date, winterList);
-        }
-        else {
-            return genWinterColumnsHtml(date, winterList);
-        }
-    }
 
     function genRowTxt(d, winterList) {
         let str = '';
@@ -204,7 +191,7 @@ td.date_col {
         }
     }
 
-    function genTable(type, sortedDates, winterList) {
+    function genTableByDate(type, sortedDates, winterList) {
         let str = '';
 
         for (let i=0; i < winterList.length; ++i) {
@@ -220,6 +207,85 @@ td.date_col {
             str += genRow(type, d, winterList);
         });
         str += genFooter(type, winterList);
+
+        if (type == 1) {
+            str += '</table>\n';
+        }
+        return str;
+    }
+
+    function genFooterHtmlByMonth(winterList) {
+        let str  = '<tr><td>Total :</td>';
+        let sum = 0;
+        for (let i=0; i < winterList.length; ++i) {
+            sum += winterList[i].dateList.length;
+            str += '<td>'+ winterList[i].dateList.length.toString() +'</td>';
+        }
+        str += '<td>'+ sum.toString() +'</td>';
+        str += '</tr>\n';
+        return str;
+    }
+    function genFooterByMonth(type, winterList) {
+        if (type == 0) {
+            return genFooterTxtByMonth(winterList);
+        }
+        else {
+            return genFooterHtmlByMonth(winterList);
+        }
+    }
+    function genWinterColumnsByMonthHtml(month, winterList) {
+        let str = '';
+        let totalForAMonth = 0;
+        for (let i=0; i < winterList.length; ++i) {
+            let winter = winterList[i];
+            let monthConsumption = 0;
+            if (winter.dictNbDateByMonth.has(month)) {
+                monthConsumption = winter.dictNbDateByMonth.get(month);
+            }
+            totalForAMonth += monthConsumption;
+            str += '<td>' + monthConsumption.toString() + '</td>';
+        }
+        str += '<td>' + totalForAMonth.toString() + '</td>';
+        return str;
+    }
+    function genMonthColumnHtml(month) {
+        let str  = '<td class="date_col">';
+        str += GetMonthStr(month);
+        str += '</td>';
+        return str;
+    }
+    function genRowByMonthHtml(month, total, winterList) {
+        let str = '<tr>';
+        str += genMonthColumnHtml(month);
+        str += genWinterColumnsByMonthHtml(month, winterList);
+        str += '</tr>\n';
+        return str;
+    }
+    function genRowByMonth(type, month, total, winterList) {
+        if (type == 0) {
+            return genRowByMonthTxt(month, total, winterList);
+        }
+        else {
+            return genRowByMonthHtml(month, total, winterList);
+        }
+    }
+    function genTableByMonth(type, winterList) {
+        console.log("dictNbDateByMonth");
+        let dictNbDateByMonth = getDictNbDateByMonth(winterList);
+        console.log(dictNbDateByMonth);
+
+        let str = '';
+
+        if (type == 1) {
+            str += '<table>\n';
+        }
+
+        str += genHeader(type, winterList);
+
+        for (const [month, total] of dictNbDateByMonth) {
+            str += genRowByMonth(type, month, total, winterList);
+        }
+        str += genFooterByMonth(type, winterList);
 
         if (type == 1) {
             str += '</table>\n';
@@ -289,14 +355,13 @@ td.date_col {
 
         console.log("sortedDates");
         console.log(sortedDates);
-        console.log("dictNbDateByMonth");
-        let dictNbDateByMonth = getDictNbDateByMonth(winterList);
-        console.log(dictNbDateByMonth);
 
-        //let txt = genTable(0, sortedDates, winterList);
+        //let txt = genTableByDate(0, sortedDates, winterList);
         //console.log(txt);
-        let html = genTable(1, sortedDates, winterList);
-        document.getElementById("demo").innerHTML = html;
+        let html = genTableByDate(1, sortedDates, winterList);
+        document.getElementById("par_jours").innerHTML = html;
+        let htmlByMonth = genTableByMonth(1, winterList);
+        document.getElementById("par_mois").innerHTML = htmlByMonth;
     }
     console.log("titi")
     window.addEventListener('load', function () {
@@ -309,6 +374,28 @@ td.date_col {
 
     });
     console.log("titi2")
+
+    document.addEventListener('DOMContentLoaded', function(event) {
+        //the event occurred
+        const el = document.getElementById('select');
+
+        const theDivParJours = document.getElementById("par_jours");
+        const theDivParMois = document.getElementById("par_mois");
+
+        theDivParJours.style.display = 'none';
+        theDivParMois.style.display = 'none';
+
+        const theDiv = document.getElementById(el.value);
+        theDiv.style.display = 'block';
+
+        el.addEventListener('change', function handleChange(event) {
+            theDivParJours.style.display = 'none';
+            theDivParMois.style.display = 'none';
+
+            const theDiv2 = document.getElementById(event.target.value);
+            theDiv2.style.display = 'block';
+        });
+    })
 </script>
 
 <head>
@@ -316,6 +403,15 @@ td.date_col {
   <title>Ma conso de granul&eacute;</title>
 </head>
 <body>
-<p id="demo"></p>
+    <label for="select">Consommation par :</label>
+
+    <select name="select" id="select">
+      <option value="par_jours">Jours</option>
+      <option value="par_mois">Mois</option>
+    </select>
+
+    <br><br>
+    <div id="par_jours"></div>
+    <div id="par_mois"> </div>
 </body>
 </html> 
