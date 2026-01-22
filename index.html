@@ -318,7 +318,7 @@ div {
 
     function processData(inData) {
         // code to be executed
-        let arr = inData.split("\n");
+        let arr = inData.trim().split("\n").reverse();
         let fLen = arr.length;
         let theWinter = null;
         let winterList = [];
