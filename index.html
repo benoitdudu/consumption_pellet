@@ -19,8 +19,9 @@ div {
   display: none;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    class Date {
+    class MyDate {
         constructor(inDateStr) {
             let theSplittedDate = inDateStr.split('-');
             this.year  = parseInt(theSplittedDate[0]);
@@ -270,9 +271,9 @@ div {
         }
     }
     function genTableByMonth(type, winterList) {
-        console.log("dictNbDateByMonth");
+        // console.log("dictNbDateByMonth");
         let dictNbDateByMonth = getDictNbDateByMonth(winterList);
-        console.log(dictNbDateByMonth);
+        // console.log(dictNbDateByMonth);
 
         let str = '';
 
@@ -316,6 +317,35 @@ div {
         return sortedDictNbDateByMonth;
     }
 
+    function barChartByWinter(winterList) {
+        const ctx = document.getElementById('ChartWinter');
+        let theLabels = [];
+        let theData = [];
+
+        winterList.forEach(function (w) {
+            theLabels.push(w.name);
+            theData.push(w.dateList.length);
+        });
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+            labels: theLabels,
+            datasets: [{
+                label: '# nb sacs de granulé consommés',
+                data: theData,
+                borderWidth: 1
+            }]
+            },
+            options: {
+            scales: {
+                y: {
+                beginAtZero: true
+                }
+            }
+            }
+        });
+    }
     function processData(inData) {
         // code to be executed
         let arr = inData.trim().split("\n").reverse();
@@ -326,7 +356,7 @@ div {
 
         for (let i = 0; i < fLen; i++) {
             let dateStr = arr[i];
-            let theDate = new Date(dateStr);
+            let theDate = new MyDate(dateStr);
 
             if ((theWinter == null) || ((theWinter.startYear == theDate.year - 1) && theDate.month > 6)) {
                 console.log(theWinter);
@@ -353,8 +383,8 @@ div {
             }
         });
 
-        console.log("sortedDates");
-        console.log(sortedDates);
+        // console.log("sortedDates");
+        // console.log(sortedDates);
 
         //let txt = genTableByDate(0, sortedDates, winterList);
         //console.log(txt);
@@ -362,8 +392,9 @@ div {
         document.getElementById("par_jours").innerHTML = html;
         let htmlByMonth = genTableByMonth(1, winterList);
         document.getElementById("par_mois").innerHTML = htmlByMonth;
+        barChartByWinter(winterList);
     }
-    console.log("titi")
+    // console.log("titi")
     window.addEventListener('load', function () {
     var myUrl = 'https://raw.githubusercontent.com/benoitdudu/pellet_stove_control/main/pellet_stove_app/pellet_consumption.txt'
 
@@ -373,27 +404,29 @@ div {
       .then(data => processData(data));
 
     });
-    console.log("titi2")
+    // console.log("titi2")
 
     document.addEventListener('DOMContentLoaded', function(event) {
         //the event occurred
         const el = document.getElementById('select');
-
-        const theDivParJours = document.getElementById("par_jours");
-        const theDivParMois = document.getElementById("par_mois");
-
-        theDivParJours.style.display = 'none';
-        theDivParMois.style.display = 'none';
+        for (let i = 0; i < el.childElementCount; i++) {
+            const div = document.getElementById(el[i].value);
+            div.style.display = 'none';
+        }
 
         const theDiv = document.getElementById(el.value);
         theDiv.style.display = 'block';
 
         el.addEventListener('change', function handleChange(event) {
-            theDivParJours.style.display = 'none';
-            theDivParMois.style.display = 'none';
-
-            const theDiv2 = document.getElementById(event.target.value);
-            theDiv2.style.display = 'block';
+            for (let i = 0; i < el.childElementCount; i++) {
+                const div = document.getElementById(el[i].value);
+                if (el[i].value == event.target.value) {
+                    div.style.display = 'block';
+                }
+                else {
+                    div.style.display = 'none';
+                }
+            }
         });
     })
 </script>
@@ -402,16 +435,18 @@ div {
   <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ma conso de granul&eacute;</title>
 </head>
-<body>
-    <label for="select">Consommation par :</label>
+    <body>
+<label for="select">Consommation par :</label>
 
     <select name="select" id="select">
       <option value="par_jours">Jours</option>
       <option value="par_mois">Mois</option>
+      <option value="hist_hiver">Histogramme par hiver</option>
     </select>
 
     <br><br>
     <div id="par_jours"></div>
     <div id="par_mois"> </div>
+    <div id="hist_hiver"><canvas id="ChartWinter"></canvas></div>
 </body>
-</html> 
+</html>
