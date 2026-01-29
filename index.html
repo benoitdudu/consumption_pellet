@@ -271,9 +271,7 @@ div {
         }
     }
     function genTableByMonth(type, winterList) {
-        // console.log("dictNbDateByMonth");
         let dictNbDateByMonth = getDictNbDateByMonth(winterList);
-        // console.log(dictNbDateByMonth);
 
         let str = '';
 
@@ -340,11 +338,59 @@ div {
             options: {
             scales: {
                 y: {
-                beginAtZero: true
+                beginAtZero: false
                 }
             }
             }
         });
+    }
+    function barChartByMonthAndWinter(winterList) {
+        const ctx = document.getElementById('ChartWinter2');
+        let theLabels = [];
+        let theDataSet = [];
+        let month_indexes = [9,10,11,12,1,2,3,4,5]
+
+        month_indexes.forEach(function (m) {
+            theLabels.push(GetMonthStr(m));
+        });
+
+        winterList.forEach(function (w) {
+            let theData = [];
+            month_indexes.forEach(function (m) {
+                let val = 0;
+                if (w.dictNbDateByMonth.has(m)) {
+                    val = w.dictNbDateByMonth.get(m);
+                }
+                theData.push(val);
+            });
+
+            theDataSet.push({
+                label: w.name,
+                data: theData,
+            });
+        });
+
+        const data = {
+            labels: theLabels,
+            datasets: theDataSet
+        };
+        const config = {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'conso par mois et par hiver'
+                }
+                }
+            },
+        };
+        new Chart(ctx, config);
     }
     function processData(inData) {
         // code to be executed
@@ -359,7 +405,7 @@ div {
             let theDate = new MyDate(dateStr);
 
             if ((theWinter == null) || ((theWinter.startYear == theDate.year - 1) && theDate.month > 6)) {
-                console.log(theWinter);
+                //console.log(theWinter);
                 theWinter = new Winter(theDate.year);
                 winterList.push(theWinter);
             }
@@ -373,8 +419,6 @@ div {
             let push = 1;
             if (sortedDates.length != 0) {
                 if (sortedDates[sortedDates.length-1].cmp(value) == 0) {
-                    //console.log("same val");
-                    //console.log(value);
                     push = 0;
                 }
             }
@@ -383,9 +427,6 @@ div {
             }
         });
 
-        // console.log("sortedDates");
-        // console.log(sortedDates);
-
         //let txt = genTableByDate(0, sortedDates, winterList);
         //console.log(txt);
         let html = genTableByDate(1, sortedDates, winterList);
@@ -393,8 +434,9 @@ div {
         let htmlByMonth = genTableByMonth(1, winterList);
         document.getElementById("par_mois").innerHTML = htmlByMonth;
         barChartByWinter(winterList);
+        barChartByMonthAndWinter(winterList);
     }
-    // console.log("titi")
+
     window.addEventListener('load', function () {
     var myUrl = 'https://raw.githubusercontent.com/benoitdudu/pellet_stove_control/main/pellet_stove_app/pellet_consumption.txt'
 
@@ -404,7 +446,6 @@ div {
       .then(data => processData(data));
 
     });
-    // console.log("titi2")
 
     document.addEventListener('DOMContentLoaded', function(event) {
         //the event occurred
@@ -442,11 +483,13 @@ div {
       <option value="par_jours">Jours</option>
       <option value="par_mois">Mois</option>
       <option value="hist_hiver">Histogramme par hiver</option>
+      <option value="hist_mois_hiver">Histogramme par mois et hiver</option>
     </select>
 
     <br><br>
     <div id="par_jours"></div>
     <div id="par_mois"> </div>
     <div id="hist_hiver"><canvas id="ChartWinter"></canvas></div>
+    <div id="hist_mois_hiver"><canvas id="ChartWinter2"></canvas></div>
 </body>
 </html>
